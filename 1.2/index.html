@@ -1,29 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 </head>
+
 <body>
-    
+    <canvas id='chart' width="200" height="200">
+
+    </canvas>
 </body>
 
 <script>
-    async function getData(){
+
+    chartIt();
+
+
+    async function chartIt() {
+        const data = await getData();
+        const ctx = document.getElementById('chart').getContext('2d');
+
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.xlabels,
+                datasets: [{
+                    label: 'Combined land-surface air and sea-surface water temperature.',
+                    fill: false,
+                    data: data.ytemps,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            callback: function (value, index, values) {
+                                return value + '°';
+                            }
+                        }
+                    }]
+                }
+            }
+        });
+    }
+
+
+    async function getData() {
+        const xlabels = [];
+        const ytemps = [];
         const response = await fetch('csv.csv');
         const data = await response.text();
-        
+
         const table = data.split('\n').slice(1);
         table.forEach(row => {
             const column = row.split(',');
             const year = column[0];
+            xlabels.push(year);
             const temp = column[1];
-            console.log('Year: ' + year + " Temperature: " + temp);
+            ytemps.push(parseFloat(temp) + 14);
         });
+        return { xlabels, ytemps };
     }
 
-    getData();
 
 </script>
+
 </html>
